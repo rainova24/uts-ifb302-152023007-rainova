@@ -29,6 +29,9 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
+    - name: Install System Dependencies for MySQL
+      run: sudo apt-get update && sudo apt-get install -y default-libmysqlclient-dev gcc      
+
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
