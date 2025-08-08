@@ -13,6 +13,23 @@ jobs:
       matrix:
         python-version: [3.9, 3.10, 3.11]
 
+    # Menambahkan layanan MySQL untuk pengujian
+    services:
+      mysql:
+        image: mysql:8.0
+        env:
+          MYSQL_ROOT_PASSWORD: testpass
+          MYSQL_DATABASE: testdb
+          MYSQL_USER: testuser
+          MYSQL_PASSWORD: testpass
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -u root -p${{ secrets.MYSQL_ROOT_PASSWORD }}"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+
     steps:
     - uses: actions/checkout@v4
 
@@ -48,11 +65,14 @@ jobs:
 
     - name: Run tests
       env:
-        DB_HOST: localhost
+        # Mengarahkan koneksi ke layanan MySQL yang berjalan di localhost
+        DB_HOST: 127.0.0.1
         DB_USER: testuser
         DB_PASS: testpass
         DB_NAME: testdb
       run: |
+        # Menunggu MySQL siap sebelum menjalankan tes
+        sleep 15
         python -m pytest tests/ -v --cov=app --cov-report=xml
 
     - name: Upload coverage to Codecov
